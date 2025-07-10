@@ -1,0 +1,405 @@
+openapi: 3.0.3
+info:
+  title: Devices Service API
+  version: 1.0.0
+  description: Управление IoT-устройствами и получение данных
+
+paths:
+  /devices:
+    get:
+      tags: [Devices]
+      summary: Получить список устройств
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: homeId
+          in: query
+          schema:
+            $ref: "#/components/schemas/UUID"
+          description: Фильтр по дому
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [LIGHT, SENSOR, SWITCH, THERMOSTAT]
+          description: Фильтр по типу устройства
+      responses:
+        "200":
+          description: Список устройств
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Device"
+
+    post:
+      tags: [Devices]
+      summary: Добавить новое устройство
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDeviceRequest"
+      responses:
+        "201":
+          description: Устройство создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "400":
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /devices/{deviceId}:
+    get:
+      tags: [Devices]
+      summary: Получить информацию об устройстве
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: Данные устройства
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceDetails"
+        "404":
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      tags: [Devices]
+      summary: Обновить информацию об устройстве
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDeviceRequest"
+      responses:
+        "200":
+          description: Устройство обновлено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "404":
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [Devices]
+      summary: Удалить устройство
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      responses:
+        "204":
+          description: Устройство удалено
+        "404":
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /devices/{deviceId}/control:
+    patch:
+      tags: [Devices]
+      summary: Отправить команду устройству
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceCommand"
+      responses:
+        "202":
+          description: Команда принята
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommandResponse"
+        "404":
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: Устройство недоступно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /devices/{deviceId}/readings:
+    get:
+      tags: [Devices]
+      summary: Получить исторические показания устройства
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Начало периода
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Конец периода
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+          description: Лимит записей
+      responses:
+        "200":
+          description: Список показаний
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DeviceReading"
+
+  /devices/{deviceId}/stream:
+    get:
+      tags: [Devices]
+      summary: WebSocket поток данных устройства
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      responses:
+        "101":
+          description: Switching Protocols
+          headers:
+            Upgrade:
+              schema:
+                type: string
+                example: websocket
+            Connection:
+              schema:
+                type: string
+                example: Upgrade
+
+components:
+  schemas:
+    # ===== Базовые модели =====
+    UUID:
+      type: string
+      format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440000"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "DEVICE_NOT_FOUND"
+        message:
+          type: string
+          example: "Устройство с указанным ID не существует"
+        details:
+          type: object
+          additionalProperties: true
+
+    # ===== Модели устройств =====
+    Device:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+        name:
+          type: string
+          example: "Умная лампа в гостиной"
+        type:
+          type: string
+          enum: [LIGHT, SENSOR, SWITCH, THERMOSTAT]
+          example: LIGHT
+        status:
+          $ref: "#/components/schemas/DeviceStatus"
+        homeId:
+          $ref: "#/components/schemas/UUID"
+        createdAt:
+          type: string
+          format: date-time
+
+    DeviceDetails:
+      allOf:
+        - $ref: "#/components/schemas/Device"
+        - type: object
+          properties:
+            manufacturer:
+              type: string
+              example: "Xiaomi"
+            model:
+              type: string
+              example: "XMSH05LM"
+            firmware:
+              type: string
+              example: "1.2.3"
+            lastSeen:
+              type: string
+              format: date-time
+            capabilities:
+              type: array
+              items:
+                type: string
+              example: ["ON_OFF", "BRIGHTNESS"]
+
+    CreateDeviceRequest:
+      type: object
+      required: [name, type, homeId]
+      properties:
+        name:
+          type: string
+          example: "Новое устройство"
+        type:
+          type: string
+          enum: [LIGHT, SENSOR, SWITCH, THERMOSTAT]
+        homeId:
+          $ref: "#/components/schemas/UUID"
+        pairingCode:
+          type: string
+          example: "ABC-123-XYZ"
+
+    UpdateDeviceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Обновленное имя устройства"
+        location:
+          type: string
+          example: "Гостиная, левая стена"
+
+    # ===== Состояния и команды =====
+    DeviceStatus:
+      type: object
+      properties:
+        online:
+          type: boolean
+          example: true
+        lastUpdate:
+          type: string
+          format: date-time
+        currentState:
+          type: object
+          additionalProperties: true
+          example:
+            brightness: 75
+            color: "#FFFFFF"
+
+    DeviceCommand:
+      type: object
+      required: [command]
+      properties:
+        command:
+          type: string
+          enum: [ON, OFF, SET_TEMPERATURE, SET_BRIGHTNESS, TOGGLE]
+          example: ON
+        value:
+          type: number
+          example: 23.5
+        parameters:
+          type: object
+          additionalProperties: true
+          example:
+            duration: 30
+            transition: "smooth"
+
+    CommandResponse:
+      type: object
+      properties:
+        operationId:
+          $ref: "#/components/schemas/UUID"
+        status:
+          type: string
+          enum: [ACCEPTED, QUEUED, FAILED]
+          example: ACCEPTED
+        estimatedCompletion:
+          type: string
+          format: date-time
+        message:
+          type: string
+          example: "Команда принята в обработку"
+
+    # ===== Данные устройств =====
+    DeviceReading:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        metric:
+          type: string
+          example: "temperature"
+        value:
+          type: number
+          example: 23.5
+        unit:
+          type: string
+          example: "°C"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,46 @@
+@startuml ER_Diagram_Warmhouse
+title ER-диаграмма системы Warmhouse
+
+' Сущности
+entity "Пользователь" as User {
+  *user_id: UUID <<PK>>
+  --
+  *email: VARCHAR(255)
+  *password_hash: VARCHAR(255)
+  full_name: VARCHAR(100)
+  created_at: TIMESTAMP
+}
+
+entity "Дом" as Home {
+  *home_id: UUID <<PK>>
+  --
+  *user_id: UUID <<FK>>
+  name: VARCHAR(50)
+  address: TEXT
+}
+
+entity "Устройство" as Device {
+  *device_id: UUID <<PK>>
+  --
+  *home_id: UUID <<FK>>
+  *external_id: VARCHAR(50)  "ID в Matter"
+  *type: VARCHAR(20)  "датчик/выключатель/etc"
+  name: VARCHAR(50)
+  status: BOOLEAN
+}
+
+entity "Сценарий" as Scenario {
+  *scenario_id: UUID <<PK>>
+  --
+  *home_id: UUID <<FK>>
+  name: VARCHAR(50)
+  trigger_condition: TEXT
+  actions: JSON
+}
+
+User ||--o{ Home : "владеет"
+Home ||--o{ Device : "содержит"
+Home ||--o{ Scenario : "имеет"
+Scenario }o--|| Device : "управляет"
+
+@enduml

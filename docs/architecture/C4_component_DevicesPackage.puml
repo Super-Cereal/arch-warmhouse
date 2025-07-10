@@ -1,0 +1,40 @@
+@startuml C4_component_DevicesPackage
+title Диаграмма компонентов ядра монитоирнга и управления устройствами
+
+!include <C4/C4_Component>
+
+Container(devicespackage, "Ядро мониторинга и управления устройствами") {
+    Component(device_manager, "DeviceManager", "NodeJS", "Оркестратор работы с устройствами")
+    Component(plugin_registry, "PluginRegistry", "NodeJS", "Реестр плагинов и фабрика обработчиков")
+    Component(device_repository, "DeviceRepository", "TypeORM", "Управление данными устройств")
+    Component(communication_service, "CommunicationService", "NodeJS", "Базовый транспорт (Matter/Wi-Fi)")
+    Component(scenario_engine, "ScenarioEngine", "NodeJS", "Выполнение сценариев")
+    
+    Component(abstract_plugin, "BaseDevicePlugin", "Abstract Class", "Абстракция плагина устройства")
+    Component(device_api, "DeviceAPI", "REST API", "API для интеграции с микросервисами")
+    
+    Rel(device_manager, abstract_plugin, "использует", "Dependency Injection")
+    Rel(device_manager, plugin_registry, "запрашивает обработчики")
+    Rel(device_manager, communication_service, "отправляет команды")
+    Rel(device_manager, device_repository, "сохраняет состояние")
+    Rel(device_manager, scenario_engine, "активирует сценарии")
+    
+    Rel(plugin_registry, abstract_plugin, "регистрирует имплементации")
+    Rel(scenario_engine, device_repository, "читает конфигурацию")
+    Rel(communication_service, device_repository, "обновляет статусы")
+}
+
+Component(specific_plugin, "TemperatureSensorPlugin", "NodeJS", "Кастомный плагин\n(из DevicesService)", $tags="external")
+Component(another_plugin, "SmartLampPlugin", "NodeJS", "Кастомный плагин\n(из DevicesService)", $tags="external")
+
+System_Ext(devices, "Умные устройства", "Matter/Wi-Fi")
+ContainerDb(database, "Database", "PostgreSQL")
+
+Rel(specific_plugin, abstract_plugin, "реализует")
+Rel(another_plugin, abstract_plugin, "реализует")
+
+Rel(device_repository, database, "Чтение/запись", "SQL")
+Rel(communication_service, devices, "Команды/статусы", "Matter")
+Rel(device_api, device_manager, "Вызывает", "HTTP")
+
+@enduml

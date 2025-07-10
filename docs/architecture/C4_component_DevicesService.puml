@@ -1,0 +1,38 @@
+@startuml C4_component_DevicesService
+title Диаграмма компонентов микросервиса мониторинга и управления устройствами
+
+!include <C4/C4_Component>
+
+Container(devicesservice, "Микросервис мониторинга и управления устройствами", "NodeJS, fastify") {
+    Component(api_gateway, "API Gateway", "Fastify", "Входная точка для веб-приложения")
+    Component(device_controller, "DeviceController", "NodeJS", "Обработчик HTTP-запросов")
+    Component(device_service, "DeviceService", "NodeJS", "Бизнес-логика устройств")
+    Component(specific_plugin, "TemperatureSensorPlugin", "NodeJS", "Плагин датчика температуры")
+    Component(another_plugin, "SmartLampPlugin", "NodeJS", "Плагин умной лампы")
+
+    Rel(api_gateway, device_controller, "маршрутизирует запросы", "HTTP")
+    Rel(device_controller, device_service, "вызывает методы")
+    Rel(device_service, specific_plugin, "использует")
+    Rel(device_service, another_plugin, "использует")
+}
+
+Container(devicespackage, "Ядро мониторинга и управления устройствами", "NodeJS") {
+    Component(device_manager, "DeviceManager", "NodeJS")
+    Component(device_api, "DeviceAPI", "REST API")
+    Component(abstract_plugin, "BaseDevicePlugin", "Abstract Class")
+}
+
+System_Ext(webapp, "Веб-приложение", "React")
+
+Rel(specific_plugin, device_manager, "регистрируется")
+Rel(another_plugin, device_manager, "регистрируется")
+
+Rel(specific_plugin, device_api, "вызывает API ядра", "HTTP")
+Rel(another_plugin, device_api, "вызывает API ядра", "HTTP")
+
+Rel(webapp, api_gateway, "управляет устройствами", "HTTPS")
+
+Rel(specific_plugin, abstract_plugin, "реализует")
+Rel(another_plugin, abstract_plugin, "реализует")
+
+@enduml

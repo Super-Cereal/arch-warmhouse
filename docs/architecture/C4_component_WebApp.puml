@@ -1,0 +1,46 @@
+@startuml C4_component_WebApp
+title Диаграмма компонентов веб приложения
+
+top to bottom direction
+
+!include <C4/C4_Component>
+
+Person(User, "Пользователь", "Пользователь умного дома")
+
+System(Warmhouse, "Система Warmhouse", "Система управления и мониторинга умного дома")
+
+Container_Boundary(Warmhouse, "Система Warmhouse", "Система управления и мониторинга умного дома") {
+    Container(AuthService, "Микросервис авторизации", "NodeJS, fastify")
+    Container(HomeService, "Микросервис настройки дома", "NodeJS, fastify")
+    Container(DevicesService, "Микросервис устройств", "NodeJS, fastify")
+    Container(WebApp, "Веб-приложение", "React, TypeScript, PWA", "Предоставляет пользовательский интерфейс системы")
+}
+
+Container(WebApp, "Веб-приложение", "React, TypeScript, PWA", "Предоставляет пользовательский интерфейс системы") {
+    Component(AppRouter, "AppRouter", "React Router", "Управляет навигацией между страницами")
+    Component(AuthModule, "Модуль авторизации", "React, React-Query, effector", "ui, model, api для авторизации пользователя")
+    Component(HomeModule, "Модуль настройки дома", "React, React-Query, effector", "ui, model, api для настройки умного дома и подключения новых устройств")
+    Component(DeviceControlModule, "Модуль управления устройствами", "React, React-Query, effector", "ui, model, api для мониторинга и управления устройствами")
+    Component(StateManager, "Менеджер состояния", "Effector", "Хранит глобальное состояние")
+    Component(UIComponents, "Общие UI компоненеты", "React", "Библиотека переиспользуемых компонентов")
+}
+
+Rel_R(User, AppRouter, "Работает с интерфейсом", "HTTPS/WebSocket")
+
+Rel(AppRouter, AuthModule, "Рендерит страницу")
+Rel(AppRouter, HomeModule, "Рендерит страницу")
+Rel(AppRouter, DeviceControlModule, "Рендерит страницу")
+
+Rel(AuthModule, StateManager, "")
+Rel(AuthModule, UIComponents, "")
+Rel_U(AuthModule, AuthService, "API запросы с кешированием", "React-Query, HTTPS/WebSocket")
+
+Rel(HomeModule, StateManager, "")
+Rel(HomeModule, UIComponents, "")
+Rel_U(HomeModule, HomeService, "API запросы с кешированием", "React-Query, HTTPS/WebSocket")
+
+Rel(DeviceControlModule, StateManager, "")
+Rel(DeviceControlModule, UIComponents, "")
+Rel_U(DeviceControlModule, DevicesService, "API запросы с кешированием", "React-Query, HTTPS/WebSocket")
+
+@enduml

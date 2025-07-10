@@ -1,0 +1,50 @@
+@startuml C4_code_auth
+title Authorization Microservice Code Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+class AuthController {
+    +login(req, res)
+    +register(req, res)
+    +verifyToken(req, res)
+}
+
+class AuthService {
+    +authenticate(email, password): UserWithToken
+    +registerUser(userData): User
+    +verifyToken(token): User
+}
+
+class UserRepository {
+    +findByEmail(email): User
+    +create(userData): User
+}
+
+class JWTService {
+    +generateToken(user): string
+    +verifyToken(token): UserPayload
+}
+
+class PasswordService {
+    +hash(password): string
+    +compare(password, hash): boolean
+}
+
+class User {
+    +id: string
+    +email: string
+    +passwordHash: string
+    +createdAt: Date
+}
+
+AuthController "1" --> "1" AuthService : uses
+AuthService "1" --> "1" UserRepository : depends on
+AuthService "1" --> "1" JWTService : depends on
+AuthService "1" --> "1" PasswordService : depends on
+UserRepository "1" --> "1" User : manages
+JWTService "1" --> "1" User : references
+PasswordService "1" --> "1" User : references
+
+@enduml

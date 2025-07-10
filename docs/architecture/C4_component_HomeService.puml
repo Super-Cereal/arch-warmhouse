@@ -1,0 +1,33 @@
+@startuml C4_component_HomeService
+title Диаграмма компонентов микросервиса настройки дома (HomeService)
+
+top to bottom direction
+
+!include <C4/C4_Component>
+
+Container(HomeService, "Микросервис настройки дома", "NodeJS, fastify", "Подключение умного дома, связь пользователя с устройствами") {
+    Component(HomeRouter, "HomeRouter", "Fastify Router", "Маршрутизация HTTP-запросов")
+    Component(HomeController, "HomeController", "JavaScript Class", "Обработка бизнес-логики домов")
+    Component(DeviceBindingService, "DeviceBindingService", "JavaScript Class", "Привязка устройств к домам")
+    Component(MatterIntegration, "MatterIntegration", "JavaScript SDK", "Интеграция с протоколом Matter")
+    Component(HomeRepository, "HomeRepository", "JavaScript Class", "Управление персистентностью данных")
+    Component(SchemaValidator, "SchemaValidator", "JSON Schema", "Валидация входящих данных")
+    Component(PgClient, "PostgreSQL Client", "pg library", "Адаптер базы данных")
+}
+
+ContainerDb(Database, "Database", "PostgreSQL", "Хранит дома, связи пользователей и устройств")
+System_Ext(WebApp, "Веб-приложение", "React, Typescript, PWA")
+System_Ext(Devices, "Умные устройства", "Устройства с поддержкой Matter")
+
+Rel(HomeRouter, HomeController, "Передает запросы", "JavaScript call")
+Rel(HomeController, DeviceBindingService, "Использует для привязки устройств", "Method call")
+Rel(HomeController, SchemaValidator, "Валидирует входные данные", "JSON Schema")
+Rel(HomeController, HomeRepository, "Работает с данными", "Method call")
+Rel(DeviceBindingService, MatterIntegration, "Инициирует подключение", "Matter API")
+Rel(HomeRepository, PgClient, "Выполняет запросы", "SQL")
+Rel(PgClient, Database, "Чтение/запись данных", "TCP/IP")
+
+Rel(WebApp, HomeRouter, "API запросы", "HTTPS/REST")
+Rel(MatterIntegration, Devices, "Подключение устройств", "Matter over Wi-Fi")
+
+@enduml

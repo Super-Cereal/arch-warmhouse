@@ -62,29 +62,41 @@
 
 **Диаграмма контейнеров (Containers)**
 
-Добавьте диаграмму.
+![](./docs/architecture/C4_container.png)
 
 **Диаграмма компонентов (Components)**
 
-Добавьте диаграмму для каждого из выделенных микросервисов.
+![](./docs/architecture/C4_component_auth_service.png)
+![](./docs/architecture/C4_component_DevicesPackage.png)
+![](./docs/architecture/C4_component_DevicesService.png)
+![](./docs/architecture/C4_component_WebApp.png)
+![](./docs/architecture/C4_component_HomeService.png)
 
 **Диаграмма кода (Code)**
 
-Добавьте одну диаграмму или несколько.
+![](./docs/architecture/C4_code_auth.png)
 
 # Задание 3. Разработка ER-диаграммы
 
 Добавьте сюда ER-диаграмму. Она должна отражать ключевые сущности системы, их атрибуты и тип связей между ними.
 
+![](./docs/architecture/ER_Diagram_Warmhouse.png)
+
 # Задание 4. Создание и документирование API
 
 ### 1. Тип API
 
-Укажите, какой тип API вы будете использовать для взаимодействия микросервисов. Объясните своё решение.
+RESTful API с поддержкой WebSockets для реального времени
+
+- RESTful API идеален для CRUD-операций (управление пользователями, домами, устройствами)
+- WebSockets позволяет получать потоковые данные с датчиков
+- Простая совместимость с фронтендом на React и микросервисами на NodeJS
 
 ### 2. Документация API
 
-Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI.
+[auth_service](./docs/api/auth_service)
+[devices_service](./docs/api/devices_service)
+[home_service](./docs/api/home_service)
 
 # Задание 5. Работа с docker и docker-compose
 

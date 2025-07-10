@@ -1,0 +1,39 @@
+@startuml C4_container
+title Warmhouse Container Diagram
+
+top to bottom direction
+
+!include <C4/C4_Container>
+
+Person(User, "Пользователь", "Пользователь умного дома")
+
+System(Warmhouse, "Система Warmhouse", "Система управления и мониторинга умного дома")
+
+Container_Boundary(Warmhouse, "Система Warmhouse") {
+    Container(WebApp, "Веб-приложение", "React, Typescript, PWA", "Предоставляет пользователю интерфейс системы")
+    Container(AuthService, "Микросервис авторизации", "NodeJS, fastify", "Позволяет авторизоваться в системе")
+    Container(HomeService, "Микросервис настройки дома", "NodeJS, fastify", "Позволяет подключить умный дом и связать его с пользователем и устройствами")
+
+    Container(DevicesService, "Микросервис мониторинга и управления устройствами", "NodeJS, fastify", "Описывает специфичную логику для большинства устройств")
+    Container(DevicesPackage, "Ядро мониторинга и управления устройствами", "NodeJS, fastify", "Предоставляет базовые функции для мониторинга и управления устройствами")
+
+    ContainerDb(Database, "Database", "PostgreSQL", "Хранит пользователя, его дома, связи с устройствами, программируемые сценарии")
+}
+
+System_Ext(Devices, "Умные устройства", "Всевозможные умные устройства различных производителей", "aada")
+
+Rel(User, WebApp, "Самостоятельно подключает устройства, управляет ими, мониторит показания")
+Rel(WebApp, AuthService, "Авторизует пользователя")
+Rel(WebApp, HomeService, "Настраивает умный дом")
+Rel(WebApp, DevicesService, "Настраивают умные устройсва")
+
+Rel(AuthService, Database, "Хранит пользователей")
+Rel(HomeService, Database, "Хранит дома и связи дома с пользователями и устройств")
+
+Rel(HomeService, Devices, "Подключает к системе", "Matter over Wi-Fi")
+
+Rel(DevicesService, DevicesPackage, "Использует для обращения к устройствам", "Паттерн 'Плагин'")
+Rel(DevicesPackage, Devices, "Управляют устройствами", "Matter over Wi-Fi")
+Rel(DevicesPackage, Database, "Хранит устройства и сценарии")
+
+@enduml
