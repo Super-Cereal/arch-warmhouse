@@ -38,9 +38,21 @@ entity "Сценарий" as Scenario {
   actions: JSON
 }
 
-User ||--o{ Home : "владеет"
+entity "Данные устройства" as DeviceData {
+  *data_id: UUID <<PK>>
+  --
+  *device_id: UUID <<FK>>
+  *timestamp: TIMESTAMP
+  *value: FLOAT
+  unit: VARCHAR(10)  "°C, %, lux и т.д."
+  data_type: VARCHAR(20)  "temperature/humidity/power/etc"
+}
+
+' Связи
+User }o--o{ Home : "владеет"
 Home ||--o{ Device : "содержит"
 Home ||--o{ Scenario : "имеет"
 Scenario }o--|| Device : "управляет"
+Device ||--o{ DeviceData : "генерирует"
 
 @enduml
