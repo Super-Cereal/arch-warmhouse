@@ -1,0 +1,18 @@
+@startuml C4_context
+title Warmhouse Context Diagram
+
+left to right direction
+
+!include <C4/C4_Context>
+
+Person(User, "Пользователь", "Пользователь умного дома")
+
+System(WarmhouseSystem, "Система Warmhouse", "Система управления и мониторинга умного дома")
+
+System_Ext(Devices, "Умные устройства", "Всевозможные умные устройства различных производителей", "aada")
+
+Rel(User, WarmhouseSystem, "Самостоятельно подключает устройства, управляет ими, мониторит показания")
+Rel(WarmhouseSystem, Devices, "Подключает к системе", "Matter over Wi-Fi")
+Rel(WarmhouseSystem, Devices, "Управляет устройствами", "Matter over Wi-Fi")
+
+@enduml

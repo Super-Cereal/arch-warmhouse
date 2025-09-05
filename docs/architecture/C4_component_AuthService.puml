@@ -1,0 +1,25 @@
+@startuml C4_component_auth_service
+title Диаграмма компонентов для микросервиса авторизации
+
+left to right direction
+
+!include <C4/C4_Component>
+
+Container(AuthService, "Микросервис авторизации") {
+    Component(AuthController, "Auth Controller", "NodeJS, Fastify", "Обрабатывает HTTP-запросы, связанные с авторизацией")
+    Component(AuthServiceComponent, "Auth Service", "NodeJS", "Реализует бизнес-логику авторизации")
+    Component(UserRepository, "User Repository", "NodeJS", "Обеспечивает доступ к данным пользователей")
+    Component(JWTService, "JWT Service", "NodeJS", "Генерирует и верифицирует JWT токены")
+    Component(PasswordService, "Password Service", "NodeJS", "Обеспечивает хеширование и проверку паролей")
+    
+    Rel(AuthController, AuthServiceComponent, "Использует")
+    Rel(AuthServiceComponent, UserRepository, "Читает/записывает данные")
+    Rel(AuthServiceComponent, JWTService, "Генерирует/проверяет токены")
+    Rel(AuthServiceComponent, PasswordService, "Хеширует/проверяет пароли")
+}
+
+ContainerDb(Database, "Database", "PostgreSQL", "Хранит пользователей")
+
+Rel(UserRepository, Database, "Читает/записывает", "SQL")
+
+@enduml

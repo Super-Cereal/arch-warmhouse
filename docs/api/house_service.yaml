@@ -1,0 +1,346 @@
+openapi: 3.0.3
+info:
+  title: House Service API
+  version: 1.0.0
+  description: Управление умными домами и привязка устройств
+
+paths:
+  /houses:
+    get:
+      tags: [houses]
+      summary: Получить список домов пользователя
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/House"
+        "401":
+          description: Неавторизованный доступ
+
+    post:
+      tags: [houses]
+      summary: Создать новый умный дом
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHouseRequest"
+      responses:
+        "201":
+          description: Дом создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/House"
+        "400":
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /houses/{houseId}:
+    get:
+      tags: [houses]
+      summary: Получить информацию о доме
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/House"
+        "404":
+          description: Дом не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags: [houses]
+      summary: Обновить информацию о доме
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateHouseRequest"
+      responses:
+        "200":
+          description: Информация обновлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/House"
+        "404":
+          description: Дом не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [houses]
+      summary: Удалить дом
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      responses:
+        "204":
+          description: Дом успешно удален
+        "404":
+          description: Дом не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /houses/{houseId}/devices:
+    get:
+      tags: [houses, devices]
+      summary: Получить список всех устройств, привязанных к дому
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Device"
+        "404":
+          description: Дом не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [houses, devices]
+      summary: Привязать устройство к дому
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddDeviceRequest"
+      responses:
+        "201":
+          description: Устройство привязано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "404":
+          description: Дом не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /houses/{houseId}/devices/{deviceId}:
+    post:
+      tags: [houses, devices]
+      summary: Обновить информацию об устройстве
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDeviceRequest"
+      responses:
+        "200":
+          description: Информация обновлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Device"
+        "404":
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [houses, devices]
+      summary: Удалить устройство из дома
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: houseId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/UUID"
+      responses:
+        "204":
+          description: Устройство успешно удалено
+        "404":
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    UUID:
+      type: string
+      format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440000"
+
+    CreateHouseRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: "Мой умный дом"
+        address:
+          type: string
+          example: "ул. Примерная, 123"
+
+    UpdateHouseRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Обновленное название дома"
+        address:
+          type: string
+          example: "Новый адрес дома"
+
+    AddDeviceRequest:
+      type: object
+      required: [externalId, type]
+      properties:
+        externalId:
+          type: string
+          description: ID устройства в Matter
+          example: "matter-device-123"
+        type:
+          type: string
+          enum: [SENSOR, SWITCH, LIGHT, THERMOSTAT]
+          example: SENSOR
+        name:
+          type: string
+          example: "Датчик температуры в гостиной"
+
+    UpdateDeviceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Новое название устройства"
+        status:
+          type: boolean
+          example: true
+
+    House:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+        name:
+          type: string
+        address:
+          type: string
+        userId:
+          $ref: "#/components/schemas/UUID"
+
+    Device:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+        houseId:
+          $ref: "#/components/schemas/UUID"
+        externalId:
+          type: string
+          description: ID устройства в Matter
+        type:
+          type: string
+          enum: [SENSOR, SWITCH, LIGHT, THERMOSTAT]
+        name:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "HOUSE_NOT_FOUND"
+        message:
+          type: string
+          example: "Дом с указанным ID не найден"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
